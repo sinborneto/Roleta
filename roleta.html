@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Roleta de Cupom</title>
+
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: white;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        input {
+            padding: 10px;
+            margin-bottom: 30px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px;
+            background: #ff69b4;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+
+        .wrapper-roleta {
+            position: relative;
+            width: 360px;
+            height: 360px;
+            margin: 0 auto 20px;
+        }
+
+        .seta {
+            position: absolute;
+            top: -22px;
+            left: 50%;
+            transform: translateX(-50%) rotate(360deg);
+            width: 0;
+            height: 0;
+            border-left: 14px solid transparent;
+            border-right: 14px solid transparent;
+            border-top: 22px solid #333;
+            z-index: 10;
+        }
+
+        .roleta {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 8px solid #ff69b4;
+            background: conic-gradient(#2ecc71 0deg 60deg,
+                    #e74c3c 60deg 120deg,
+                    #2ecc71 120deg 180deg,
+                    #e74c3c 180deg 240deg,
+                    #2ecc71 240deg 300deg,
+                    #e74c3c 300deg 360deg);
+            position: relative;
+            transition: transform 3s cubic-bezier(.17, .67, .32, 1);
+        }
+
+        .label {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform-origin: 0% 0%;
+            width: 120px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .label:nth-child(1) {
+            transform: rotate(55deg) translateX(15px);
+        }
+
+        .label:nth-child(2) {
+            transform: rotate(115deg) translateX(20px);
+        }
+
+        .label:nth-child(3) {
+            transform: rotate(175deg) translateX(20px);
+        }
+
+        .label:nth-child(4) {
+            transform: rotate(235deg) translateX(20px);
+        }
+
+        .label:nth-child(5) {
+            transform: rotate(295deg) translateX(20px);
+        }
+
+        .label:nth-child(6) {
+            transform: rotate(355deg) translateX(20px);
+        }
+
+        .resultado {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .resultado img {
+            margin-top: 10px;
+            max-width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <input type="text" id="cupom" placeholder="Digite seu cupom" />
+
+        <div class="wrapper-roleta" id="blocoRoleta">
+            <div class="seta"></div>
+            <div class="roleta" id="roleta">
+                <span class="label">GANHOU</span>
+                <span class="label">PERDEU</span>
+                <span class="label">GANHOU</span>
+                <span class="label">PERDEU</span>
+                <span class="label">GANHOU</span>
+                <span class="label">PERDEU</span>
+            </div>
+        </div>
+
+        <button id="btnTestar">Testar Cupom</button>
+
+        <div class="resultado" id="resultadoSucesso">
+            <h2>VOCÊ GANHOU</h2>
+            <h2>CORRE NO SINVAS E PEGA SEU PRESENTE</h2>
+            <img src="https://scontent.fudi1-1.fna.fbcdn.net/v/t39.30808-6/327201592_503906395276467_1037962034891759481_n.png?_nc_cat=105&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=OUHUiyYOaMEQ7kNvwFOcHYc&_nc_oc=AdmX3jChV28GsziQX_cZOKodSfPeNhq-mG1Cse83_P4RiBzaa6KIKpyFBXSclU8St-Y&_nc_zt=23&_nc_ht=scontent.fudi1-1.fna&_nc_gid=YAOCYHWBLeI-WAhRXVFesA&oh=00_Afk8G7TX0AceHa6fCqvCs_zDGoA17mIQlXuI8_J6XqoMNQ&oe=69485E87"
+                alt="Brinde" />
+        </div>
+
+        <div class="resultado" id="resultadoErro">
+            <h2>Tente novamente</h2>
+            <button id="btnTentarNovamente">Tentar Novamente</button>
+        </div>
+    </div>
+
+    <script>
+        const btnTestar = document.getElementById("btnTestar");
+        const roleta = document.getElementById("roleta");
+        const blocoRoleta = document.getElementById("blocoRoleta");
+        const cupomInput = document.getElementById("cupom");
+        const sucesso = document.getElementById("resultadoSucesso");
+        const erro = document.getElementById("resultadoErro");
+        const btnTentarNovamente = document.getElementById("btnTentarNovamente");
+
+        const FATIAS = 6;
+        const ANGULO = 360 / FATIAS;
+
+        function girarPara(indice) {
+            const voltas = 5 * 360;
+            const anguloFinal = voltas + (360 - (indice * ANGULO + ANGULO / 2));
+            roleta.style.transform = `rotate(${anguloFinal}deg)`;
+        }
+
+        btnTestar.addEventListener("click", () => {
+            const cupom = cupomInput.value.trim().toLowerCase();
+            btnTestar.disabled = true;
+
+            let indice;
+
+            if (cupom === "hellokitty") {
+                const ganhou = [0, 2, 4];
+                indice = ganhou[Math.floor(Math.random() * ganhou.length)];
+            } else {
+                const perdeu = [1, 3, 5];
+                indice = perdeu[Math.floor(Math.random() * perdeu.length)];
+            }
+
+            girarPara(indice);
+
+            setTimeout(() => {
+                blocoRoleta.style.display = "none";
+                cupomInput.style.display = "none";
+                btnTestar.style.display = "none";
+
+                if (cupom === "hellokitty") {
+                    sucesso.style.display = "block";
+                } else {
+                    erro.style.display = "block";
+                }
+            }, 3000);
+        });
+
+        btnTentarNovamente.addEventListener("click", () => {
+            erro.style.display = "none";
+            sucesso.style.display = "none";
+
+            blocoRoleta.style.display = "block";
+            cupomInput.style.display = "block";
+            btnTestar.style.display = "block";
+
+            roleta.style.transition = "none";
+            roleta.style.transform = "rotate(0deg)";
+            setTimeout(() => {
+                roleta.style.transition = "transform 3s cubic-bezier(.17,.67,.32,1)";
+            });
+
+            cupomInput.value = "";
+            btnTestar.disabled = false;
+        });
+    </script>
+</body>
+
+</html>
